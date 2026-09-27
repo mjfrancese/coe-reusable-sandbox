@@ -1,0 +1,32 @@
+# Throwaway test for Starrco #2306. Mirrors Starrco's broker-shard-handoff caller:
+# needs + if + permissions + a full-path, SHA-pinned uses: with no with:/secrets:.
+# The callee's only job fails on purpose under continue-on-error: true.
+# Recorded: the run conclusion, the caller job's conclusion, and needs.<caller>.result.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "stands in for dotnet-projects"
+
+  broker-shard-handoff:
+    needs: [prep]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      id-token: write
+    uses: mjfrancese/coe-reusable-sandbox/.github/workflows/callee.yml@cbc1466490979bd90efec2cdd90bac094ca0250b
+
+  after:
+    needs: [broker-shard-handoff]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "needs.broker-shard-handoff.result=${{ needs.broker-shard-handoff.result }}"
