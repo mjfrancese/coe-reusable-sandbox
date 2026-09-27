@@ -1,0 +1,19 @@
+# Throwaway test for Starrco #2306. A called workflow whose only job fails on purpose
+# while carrying continue-on-error: true, the same shape as the owner-held
+# broker-shard-handoff callee. The question: does the caller's run stay green?
+on:
+  workflow_call:
+
+jobs:
+  failing:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Fail on purpose
+        run: |
+          echo "callee job fails on purpose (continue-on-error: true)"
+          exit 1
